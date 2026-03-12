@@ -1,0 +1,38 @@
+030-mixed-mode-conjunction.c
+
+Implement the conjunctive predicate c < v AND c % 2 = 0 using
+three methods:
+
+- A: use branch-less selection for both clauses
+- B: place c < v in if () branch; if c < v is predictable, save work
+     and benefit significantly
+- C: place c % 2 = 0 in if () branch; doomed to perform worst due
+     to unpredictable outcome of the predicate over random c values
+
+
+Compile via (no -O2 optimization here for dramatic effect):
+
+  cc -Wall 030-mixed-mode-conjunction.c -o 030-mixed-mode-conjunction
+
+Execute via
+
+  ./030-mixed-mode-conjunction
+
+Sample output:
+
+    sel A mixed B mixed C
+   0   0.00%  92ms  25ms  196ms
+   1   5.00%  86ms  47ms  191ms
+   2  10.00%  89ms  70ms  191ms
+   3  15.00%  87ms  97ms  192ms
+   4  20.00%  85ms  113ms 226ms
+   5  25.00%  90ms  124ms 191ms
+   6  30.00%  86ms  118ms 192ms
+   7  35.00%  90ms  108ms 193ms
+   8  40.00%  86ms  96ms  193ms
+   9  45.00%  88ms  78ms  195ms
+  10  50.00%  92ms  66ms  193ms
+        ↑
+  selectivity of the conjunctive predicate
+  (never reaches 100% due to clause c % 2 = 0
+   evaluated over the random values in vector c)

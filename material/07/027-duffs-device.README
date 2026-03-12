@@ -1,0 +1,25 @@
+027-duffs-device.c
+
+Demonstrates a trick devised by Tom Duff (back in 1983 when
+Duff was working for Lucasfilm, for Duff's original posting
+please see http://www.lysator.liu.se/c/duffs-device.html).
+Enables routines to offer loop unrolling (8-fold in the case
+of this sample file) and still perform correctly for vector
+size that are not divisible by 8.  Note the unorthodox folding
+of the do/while() and switch() constructs of C.
+
+(Mainly shown here for complete historical record and anecdotal
+value.)
+
+Compile via
+
+  cc -Wall -O2 027-duffs-device.c -o 027-duffs-device
+
+Execute via
+
+  ./027-duffs-device
+
+Sample output:
+
+  after send():      to[254] = 0     # ← 0 indicates that send() has copied too few vector entries
+  after duff_send(): to[254] = 42

@@ -1,0 +1,22 @@
+028-prefetch.c
+
+Modern CPUs can benefit from regular/predictable memory access patterns.
+If such a predictable pattern, e.g. a sequential forward scan, is
+detected, the CPU starts to prefetch the (probably) needed memory pages
+from RAM into the CPU cache to help reduce memory access latency.
+Unpredictable/random reads do not enjoy this optimization.  Explicit
+software prefetching can provide some remedy here.
+
+Compile via
+
+  cc -Wall -O2 028-prefetch.c -o 028-prefetch
+
+Execute via
+
+  ./028-prefetch
+
+Sample output:
+
+time (linear): 4599μs (sum = 75497460)
+time (bounce): 407870μs (sum = 75515095)
+time (bounce with prefetch): 143414μs (sum = 75515095)

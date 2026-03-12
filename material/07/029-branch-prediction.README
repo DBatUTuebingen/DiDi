@@ -1,0 +1,21 @@
+029-branch-prediction.c
+
+Demonstrates the impact of mis-predicted branches on the runtime
+of a tight selection loop.  The less predictable the outcome of
+the filter predicate col < v becomes (worst case: selectivity 50%),
+the longer loop execution times you will observe.
+
+Uncomment code in the file to perform these two experiments:
+
+- Experiment 1: Sorting the  (randomly populated) input vector leads
+  to perfect predictability before and after the cut-off value v.
+- Experiment 2: Branch-less selection is completely unaffected by selectivity.
+
+
+Compile via (no -O2 optimization here for dramatic effect):
+
+  cc -Wall 029-branch-prediction.c -o 029-branch-prediction
+
+Execute via
+
+  ./029-branch-prediction

@@ -1,0 +1,90 @@
+-- DuckDB's encoding of vectors of complex values
+-- combines the encoding schemes for structs and lists
+--
+-- Generate test data with DuckDB's builtin function test_vector_types()
+-- (see https://duckdb.org/docs/stable/dev/sqllogictest/writing_tests)
+
+
+-- (1) list of structs
+--
+SELECT DISTINCT t.x
+FROM   test_vector_types(null :: struct(a int, b text)[]) t(x);
+
+-- ┌──────────────────────────────────────────────────────────────────────────┐
+-- │                                    x                                     │
+-- │                      struct(a integer, b varchar)[]                      │
+-- ├──────────────────────────────────────────────────────────────────────────┤
+-- │ [{'a': NULL, 'b': NULL}]                                                 │
+-- │ []                                                                       │
+-- │ [{'a': -2147483648, 'b': 🦆🦆🦆🦆🦆🦆}, {'a': 2147483647, 'b': goo\0se}] │
+-- │ [{'a': 3, 'b': 🦆🦆🦆🦆🦆🦆}, {'a': 5, 'b': goo\0se}]                    │
+-- │ [{'a': 7, 'b': NULL}]                                                    │
+-- └──────────────────────────────────────────────────────────────────────────┘
+
+/*
+
+  DuckDB vector encoding
+
+        LIST                             STRUCT
+                               (of a int, b text fields)
+
+   ⎡(0,1)⎤   ⎡1⎤          ⎡      .    ⎤⎡0⎤   ⎡      .     ⎤⎡0⎤  ⎡1⎤
+   ⎢(1,0)⎥   ⎢1⎥          ⎢-2147483648⎥⎢1⎥   ⎢🦆🦆🦆🦆🦆🦆⎥⎢1⎥  ⎢1⎥
+   ⎢(1,2)⎥   ⎢1⎥          ⎢ 2147483647⎥⎢1⎥   ⎢     goo\0se⎥⎢1⎥  ⎢1⎥
+   ⎢(3,2)⎥   ⎢1⎥          ⎢          3⎥⎢1⎥   ⎢🦆🦆🦆🦆🦆🦆⎥⎢1⎥  ⎢1⎥
+   ⎣(5,1)⎦   ⎣1⎦          ⎢          5⎥⎢1⎥   ⎢     goo\0se⎥⎢1⎥  ⎢1⎥
+     data    val          ⎣          7⎦⎣1⎦   ⎣      .     ⎦⎣0⎦  ⎣1⎦
+     (offs,len)                  a     val          b      val  val
+
+*/
+
+
+-- (2) struct of lists
+--
+SELECT DISTINCT t.x
+FROM   test_vector_types(null :: struct(a int[], b text[])) t(x);
+
+-- ┌────────────────────────────────────────────────────────────────┐
+-- │                               x                                │
+-- │                struct(a integer[], b varchar[])                │
+-- ├────────────────────────────────────────────────────────────────┤
+-- │ {'a': [3, 5], 'b': [🦆🦆🦆🦆🦆🦆, goo\0se]}                    │
+-- │ {'a': [], 'b': []}                                             │
+-- │ {'a': [-2147483648, 2147483647], 'b': [🦆🦆🦆🦆🦆🦆, goo\0se]} │
+-- │ {'a': [NULL], 'b': [NULL]}                                     │
+-- │ {'a': [7], 'b': [NULL]}                                        │
+-- └────────────────────────────────────────────────────────────────┘
+
+
+/*
+
+DuckDB vector encoding
+
+          STRUCT                                  two LISTs
+(of a int[], b text[] fields)
+
+  ⎡(0,2)⎤⎡1⎤  ⎡(0,2)⎤⎡1⎤   ⎡1⎤         ⎡          3⎤⎡1⎤   ⎡🦆🦆🦆🦆🦆🦆⎤⎡1⎤
+  ⎢(2,0)⎥⎢1⎥  ⎢(2,0)⎥⎢1⎥   ⎢1⎥         ⎢          5⎥⎢1⎥   ⎢     goo\0se⎥⎢1⎥
+  ⎢(2,2)⎥⎢1⎥  ⎢(2,2)⎥⎢1⎥   ⎢1⎥         ⎢-2147483648⎥⎢1⎥   ⎢🦆🦆🦆🦆🦆🦆⎥⎢1⎥
+  ⎢(4,1)⎥⎢1⎥  ⎢(4,1)⎥⎢1⎥   ⎢1⎥         ⎢ 2147483647⎥⎢1⎥   ⎢     goo\0se⎥⎢1⎥
+  ⎣(5,1)⎦⎣1⎦  ⎣(5,1)⎦⎣1⎦   ⎣1⎦         ⎢      .    ⎥⎢0⎥   ⎢      .     ⎥⎢0⎥
+     a   val     b   val   val         ⎣          7⎦⎣1⎦   ⎣      .     ⎦⎣0⎦
+                                            data    val        data     val
+       (offs, len)
+                                               a                   b
+
+  NB. The two vectors encoding the lists in the a and b fields
+  have the same length (of 6). This is only due to the sample value
+  produced by test_vector_types().  In general, the vector lengths
+  will differ.
+*/
+
+
+-----------------------------------------------------------------------
+-- Unrelated:
+-- DuckDB exposes more testing functionality, for example
+-- function test_all_types().
+
+.columns
+FROM test_all_types();
+.rows
