@@ -1,5 +1,5 @@
 
-# **D**esign and **I**mplemenation of **D**uckDB **I**nternals (*DiDi*)
+# **D**esign and **I**mplementation of **D**uckDB **I**nternals (*DiDi*)
 
 A course on selected implementation techniques used in
 the DuckDB's relational database engine.
