@@ -1,8 +1,8 @@
 
-# **Di**ssecting the **D**uck's **I**nnards (*DiDi*)
+# **D**esign and **I**mplemenation of **D**uckDB **I**nternals (*DiDi*)
 
-A DuckDB-based course on the Design and Implementation of Database
-System Internals.
+A course on selected implementation techniques used in
+the DuckDB's relational database engine.
 
 ## Welcome!
 
